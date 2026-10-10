@@ -1,114 +1,610 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PocketSmartAI | Home Planner</title>
+
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
-    padding: 24px;
+    padding: 20px;
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #eef2ff, #fdf2f8);
     color: #1e293b;
 }
+
 .card {
-    max-width: 600px;
+    max-width: 680px;
     margin: 25px auto;
     padding: 28px;
     background: white;
-    border-radius: 20px;
-    box-shadow: 0 8px 30px #0001;
+    border-radius: 22px;
+    box-shadow: 0 10px 35px #00000012;
 }
-h1 { color: #4f46e5; }
-label { display: block; margin-top: 17px; font-weight: bold; }
+
+.back {
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+h1 {
+    color: #4f46e5;
+    margin-top: 24px;
+}
+
+.subtitle {
+    color: #64748b;
+    line-height: 1.6;
+}
+
+label {
+    display: block;
+    margin-top: 18px;
+    font-weight: bold;
+}
+
 input, select {
     width: 100%;
-    padding: 12px;
+    padding: 13px;
     margin-top: 8px;
     border: 1px solid #cbd5e1;
-    border-radius: 9px;
+    border-radius: 10px;
     font-size: 16px;
+    background: #fff;
 }
+
+input:focus, select:focus {
+    outline: 2px solid #c7d2fe;
+    border-color: #6366f1;
+}
+
 button {
     width: 100%;
-    padding: 14px;
-    margin-top: 22px;
+    padding: 15px;
+    margin-top: 24px;
     background: #4f46e5;
     color: white;
-    border: 0;
-    border-radius: 10px;
+    border: none;
+    border-radius: 12px;
     font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
 }
-.back { color: #4f46e5; text-decoration: none; }
+
+button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
 #result {
-    margin-top: 20px;
-    padding: 14px;
-    border-radius: 10px;
-    background: #f8fafc;
-    white-space: pre-wrap;
+    margin-top: 24px;
+}
+
+.result-box {
+    padding: 22px;
+    background: #fff;
+    border: 1px solid #e0e7ff;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px #4f46e40d;
+}
+
+.result-title {
+    font-size: 23px;
+    font-weight: bold;
+    color: #4338ca;
+    margin-bottom: 8px;
+}
+
+.result-subtitle {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.summary-card {
+    background: #eef2ff;
+    padding: 15px;
+    border-radius: 12px;
     overflow-wrap: anywhere;
+}
+
+.summary-label {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 7px;
+}
+
+.summary-value {
+    font-size: 17px;
+    font-weight: bold;
+    color: #3730a3;
+    overflow-wrap: anywhere;
+}
+
+.section-title {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: #334155;
+    font-size: 18px;
+}
+
+.item-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 12px;
+}
+
+.item-card h3 {
+    margin: 0 0 10px;
+    color: #4338ca;
+    font-size: 17px;
+}
+
+.item-card p {
+    margin: 7px 0;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.recommendation {
+    background: #f5f3ff;
+    padding: 16px;
+    border-radius: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.status {
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.error {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.success {
+    background: #ecfdf5;
+    color: #065f46;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 12px;
+    }
+
+    .card {
+        padding: 20px;
+        margin: 12px auto;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 </head>
+
 <body>
 <div class="card">
+
 <a class="back" href="/">← Back to Home</a>
+
 <h1>🏡 Home Budget Planner</h1>
-<p>Plan your home essentials within your budget.</p>
+<p class="subtitle">
+Plan your home essentials within your budget and explore
+recommendations that suit your room and interior style.
+</p>
 
 <form id="plannerForm">
-<label>Budget (₹)</label>
-<input type="number" id="budget" min="1" required placeholder="Enter your budget">
 
-<label>Room Type</label>
+<label for="budget">Total Budget (₹)</label>
+<input
+    type="number"
+    id="budget"
+    min="1"
+    required
+    placeholder="Example: 25000"
+>
+
+<label for="room_type">Room Type</label>
 <select id="room_type">
-<option>Living Room</option>
-<option>Bedroom</option>
-<option>Kitchen</option>
-<option>Study Room</option>
+    <option>Living Room</option>
+    <option>Bedroom</option>
+    <option>Kitchen</option>
+    <option>Study Room</option>
 </select>
 
-<label>Interior Style</label>
+<label for="style">Interior Style</label>
 <select id="style">
-<option>Modern</option>
-<option>Minimal</option>
-<option>Traditional</option>
-<option>Contemporary</option>
+    <option>Modern</option>
+    <option>Minimal</option>
+    <option>Traditional</option>
+    <option>Contemporary</option>
 </select>
 
-<label>First Item Needed</label>
-<input id="item" value="Sofa" required placeholder="Example: Sofa">
+<label for="item">First Item Needed</label>
+<input
+    id="item"
+    value="Sofa"
+    required
+    placeholder="Example: Sofa, bed, table"
+>
 
-<label>Quantity</label>
-<input id="quantity" type="number" min="1" max="100" value="1" required>
+<label for="quantity">Quantity</label>
+<input
+    id="quantity"
+    type="number"
+    min="1"
+    max="100"
+    value="1"
+    required
+>
 
-<button type="submit">✨ Generate My Plan</button>
+<button type="submit" id="generateButton">
+✨ Generate My Plan
+</button>
+
 </form>
 
-<div id="result" hidden></div>
+<div id="result" hidden aria-live="polite"></div>
+
 </div>
 
 <script>
-document.getElementById("plannerForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+const form = document.getElementById("plannerForm");
+const result = document.getElementById("result");
+const generateButton = document.getElementById("generateButton");
 
-    const result = document.getElementById("result");
-    result.hidden = false;
-    result.textContent = "⏳ Creating your plan...";
+function addTextElement(parent, tag, text, className) {
+    const element = document.createElement(tag);
+    element.textContent = text;
 
-    const data = {
+    if (className) {
+        element.className = className;
+    }
+
+    parent.appendChild(element);
+    return element;
+}
+
+function formatLabel(key) {
+    return String(key)
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/[_-]/g, " ")
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+function formatValue(value) {
+    if (value === null || value === undefined || value === "") {
+        return "";
+    }
+
+    if (typeof value === "boolean") {
+        return value ? "Yes" : "No";
+    }
+
+    if (Array.isArray(value)) {
+        return value.map(formatValue).join(", ");
+    }
+
+    if (typeof value === "object") {
+        return Object.entries(value)
+            .filter(([key, val]) =>
+                val !== null &&
+                val !== undefined &&
+                !["recommendation_id", "id"].includes(key.toLowerCase())
+            )
+            .map(([key, val]) =>
+                formatLabel(key) + ": " + formatValue(val)
+            )
+            .join("\n");
+    }
+
+    return String(value);
+}
+
+function findValue(object, possibleKeys) {
+    if (!object || typeof object !== "object") {
+        return undefined;
+    }
+
+    const key = Object.keys(object).find(key =>
+        possibleKeys.includes(key.toLowerCase().replace(/[\s_-]/g, ""))
+    );
+
+    return key ? object[key] : undefined;
+}
+
+function renderPlan(data, requested) {
+    result.replaceChildren();
+
+    const box = document.createElement("div");
+    box.className = "result-box";
+    result.appendChild(box);
+
+    addTextElement(box, "div", "✨ Your Home Plan", "result-title");
+
+    addTextElement(
+        box,
+        "div",
+        "Here is your generated recommendation. Review the details below.",
+        "result-subtitle"
+    );
+
+    // If the API returns its result inside a nested object,
+    // display the useful result rather than the entire API response.
+    let plan = data;
+
+    for (const key of ["recommendation", "plan", "result", "data"]) {
+        if (
+            plan &&
+            typeof plan === "object" &&
+            !Array.isArray(plan) &&
+            plan[key] &&
+            typeof plan[key] === "object"
+        ) {
+            plan = plan[key];
+            break;
+        }
+    }
+
+    if (typeof plan === "string") {
+        addTextElement(box, "div", plan, "recommendation");
+        return;
+    }
+
+    if (!plan || typeof plan !== "object" || Array.isArray(plan)) {
+        addTextElement(
+            box,
+            "div",
+            formatValue(plan) || "Your plan was generated.",
+            "recommendation"
+        );
+        return;
+    }
+
+    const budget = findValue(plan, [
+        "budget", "totalbudget", "budgetamount"
+    ]);
+
+    const room = findValue(plan, [
+        "roomtype", "room"
+    ]) ?? requested.room_type;
+
+    const style = findValue(plan, [
+        "style", "interiorstyle"
+    ]) ?? requested.style;
+
+    const total = findValue(plan, [
+        "totalcost", "totalprice", "estimatedtotal",
+        "grandtotal", "totalamount", "estimatedcost"
+    ]);
+
+    const summary = document.createElement("div");
+    summary.className = "summary-grid";
+    box.appendChild(summary);
+
+    function addSummary(label, value) {
+        if (value === undefined || value === null || value === "") {
+            return;
+        }
+
+        const card = document.createElement("div");
+        card.className = "summary-card";
+
+        addTextElement(card, "div", label, "summary-label");
+        addTextElement(card, "div", formatValue(value), "summary-value");
+
+        summary.appendChild(card);
+    }
+
+    addSummary("Your Budget", budget ?? requested.budget);
+    addSummary("Room Type", room);
+    addSummary("Interior Style", style);
+    addSummary("Estimated Total", total);
+
+    const itemKeys = [
+        "items", "products", "furniture",
+        "recommendations", "suggestions", "essentials"
+    ];
+
+    const usedKeys = new Set();
+
+    for (const key of itemKeys) {
+        const actualKey = Object.keys(plan).find(
+            k => k.toLowerCase() === key
+        );
+
+        if (!actualKey || usedKeys.has(actualKey)) {
+            continue;
+        }
+
+        const value = plan[actualKey];
+
+        if (!Array.isArray(value) || value.length === 0) {
+            continue;
+        }
+
+        usedKeys.add(actualKey);
+
+        addTextElement(
+            box,
+            "h2",
+            formatLabel(actualKey),
+            "section-title"
+        );
+
+        value.forEach((item, index) => {
+            const itemCard = document.createElement("div");
+            itemCard.className = "item-card";
+            box.appendChild(itemCard);
+
+            if (item && typeof item === "object" && !Array.isArray(item)) {
+                const name = findValue(item, [
+                    "name", "item", "product", "title"
+                ]);
+
+                addTextElement(
+                    itemCard,
+                    "h3",
+                    formatValue(name) || `Item ${index + 1}`
+                );
+
+                for (const [field, fieldValue] of Object.entries(item)) {
+                    if (
+                        fieldValue === null ||
+                        fieldValue === undefined ||
+                        fieldValue === "" ||
+                        ["id", "recommendation_id", "name", "item", "product", "title"].includes(
+                            field.toLowerCase()
+                        )
+                    ) {
+                        continue;
+                    }
+
+                    if (typeof fieldValue === "object") {
+                        addTextElement(
+                            itemCard,
+                            "p",
+                            formatLabel(field) + ": " + formatValue(fieldValue)
+                        );
+                    } else {
+                        addTextElement(
+                            itemCard,
+                            "p",
+                            formatLabel(field) + ": " + formatValue(fieldValue)
+                        );
+                    }
+                }
+            } else {
+                addTextElement(itemCard, "p", formatValue(item));
+            }
+        });
+    }
+
+    const excluded = new Set([
+        "recommendation_id", "id", "budget", "totalbudget",
+        "budgetamount", "roomtype", "room", "style",
+        "interiorstyle", "totalcost", "totalprice",
+        "estimatedtotal", "grandtotal", "totalamount",
+        "estimatedcost", ...usedKeys
+    ]);
+
+    const otherEntries = Object.entries(plan).filter(([key, value]) =>
+        !excluded.has(key.toLowerCase().replace(/[\s_-]/g, "")) &&
+        value !== null &&
+        value !== undefined &&
+        value !== "" &&
+        !Array.isArray(value) &&
+        typeof value !== "object"
+    );
+
+    if (otherEntries.length > 0) {
+        addTextElement(box, "h2", "Plan Details", "section-title");
+
+        const details = document.createElement("div");
+        details.className = "recommendation";
+        box.appendChild(details);
+
+        otherEntries.forEach(([key, value]) => {
+            addTextElement(
+                details,
+                "p",
+                formatLabel(key) + ": " + formatValue(value)
+            );
+        });
+    }
+
+    if (
+        !summary.children.length &&
+        !usedKeys.size &&
+        !otherEntries.length
+    ) {
+        addTextElement(
+            box,
+            "div",
+            "Your plan was returned, but its fields need to be matched to the app's response format.",
+            "recommendation"
+        );
+    }
+
+    addTextElement(
+        box,
+        "p",
+        "Please confirm prices and availability with the seller before purchasing.",
+        "result-subtitle"
+    );
+}
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const requested = {
         budget: Number(document.getElementById("budget").value),
         room_type: document.getElementById("room_type").value,
         style: document.getElementById("style").value,
+        item: document.getElementById("item").value.trim(),
+        quantity: Number(document.getElementById("quantity").value)
+    };
+
+    if (
+        !Number.isFinite(requested.budget) ||
+        requested.budget <= 0 ||
+        !requested.item ||
+        !Number.isInteger(requested.quantity) ||
+        requested.quantity < 1
+    ) {
+        result.hidden = false;
+        result.replaceChildren();
+
+        const error = document.createElement("div");
+        error.className = "status error";
+        error.textContent = "Please enter a valid budget, item name, and quantity.";
+        result.appendChild(error);
+        return;
+    }
+
+    const data = {
+        budget: requested.budget,
+        room_type: requested.room_type,
+        style: requested.style,
         items: [{
-            name: document.getElementById("item").value,
-            quantity: Number(document.getElementById("quantity").value)
+            name: requested.item,
+            quantity: requested.quantity
         }]
     };
+
+    result.hidden = false;
+    result.replaceChildren();
+
+    const status = document.createElement("div");
+    status.className = "status";
+    status.textContent = "⏳ Creating your home plan. Please wait...";
+    result.appendChild(status);
+
+    generateButton.disabled = true;
+    generateButton.textContent = "Generating Plan...";
 
     try {
         const response = await fetch("/generate-home", {
@@ -121,21 +617,36 @@ document.getElementById("plannerForm").addEventListener("submit", async function
         const output = await response.json();
 
         if (!response.ok) {
-            result.textContent = "❌ " + (
-                typeof output.detail === "string"
+            const message = typeof output.detail === "string"
                 ? output.detail
-                : JSON.stringify(output.detail || output)
-            );
+                : formatValue(output.detail || output) ||
+                  "Unable to generate the plan.";
+
+            result.replaceChildren();
+
+            const error = document.createElement("div");
+            error.className = "status error";
+            error.textContent = "❌ " + message;
+            result.appendChild(error);
             return;
         }
 
-        result.textContent = "✅ Your recommendation:\n\n" +
-            JSON.stringify(output, null, 2);
+        renderPlan(output, requested);
+
     } catch (error) {
-        result.textContent = "❌ Connection failed. Please try again.";
+        result.replaceChildren();
+
+        const message = document.createElement("div");
+        message.className = "status error";
+        message.textContent =
+            "❌ Connection failed. Please check your connection and try again.";
+        result.appendChild(message);
+
+    } finally {
+        generateButton.disabled = false;
+        generateButton.textContent = "✨ Generate My Plan";
     }
 });
 </script>
 </body>
 </html>
-```
