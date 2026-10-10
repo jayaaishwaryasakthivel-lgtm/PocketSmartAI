@@ -3,4 +3,110 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PocketSmartAI - Home Planner</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2ff, #fdf2f8);
+            color: #1e293b;
+            padding: 25px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 35px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px #0001;
+        }
+        h1 { color: #4f46e5; }
+        label { display: block; margin-top: 18px; font-weight: bold; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 14px;
+            border: 0;
+            border-radius: 10px;
+            background: #4f46e5;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .back { color: #4f46e5; text-decoration: none; }
+        #result { white-space: pre-wrap; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a class="back" href="/">← Home</a>
+    <h1>🏡 Home Budget Planner</h1>
+    <p>Plan your home expenses according to your budget.</p>
+
+    <form id="plannerForm">
+        <label>Monthly Budget (₹)</label>
+        <input type="number" name="budget" min="1" required placeholder="Enter your budget">
+
+        <label>Home Type</label>
+        <select name="home_type">
+            <option value="Apartment">Apartment</option>
+            <option value="Independent House">Independent House</option>
+            <option value="Small Home">Small Home</option>
+        </select>
+
+        <label>Preferred Style</label>
+        <select name="style">
+            <option value="Modern">Modern</option>
+            <option value="Minimal">Minimal</option>
+            <option value="Traditional">Traditional</option>
+        </select>
+
+        <label>Additional Requirements</label>
+        <textarea name="notes" rows="3" placeholder="Tell us what you need"></textarea>
+
+        <button type="submit">Generate My Plan</button>
+    </form>
+    <div id="result"></div>
+</div>
+
+<script>
+document.getElementById("plannerForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const result = document.getElementById("result");
+    result.textContent = "Generating your plan...";
+
+    const form = new FormData(e.target);
+    const data = Object.fromEntries(form.entries());
+    data.budget = Number(data.budget);
+
+    try {
+        const response = await fetch("/generate-home", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+        });
+        const output = await response.json();
+
+        if (!response.ok) {
+            result.textContent = output.detail || "Unable to generate plan.";
+            return;
+        }
+        result.textContent = JSON.stringify(output, null, 2);
+    } catch (error) {
+        result.textContent = "Connection error. Please try again.";
+    }
+});
+</script>
+</body>
+</html>
+```
