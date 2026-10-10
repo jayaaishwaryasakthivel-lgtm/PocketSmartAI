@@ -1,8 +1,11 @@
+```python
 import json
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
+
 from .config import settings
+
 
 def _connect():
     conn = sqlite3.connect(settings.database_path)
@@ -10,14 +13,19 @@ def _connect():
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
+
 @contextmanager
 def db():
     conn = _connect()
     try:
         yield conn
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
+
 
 def init_db():
     with db() as conn:
@@ -29,6 +37,7 @@ def init_db():
             password_hash TEXT NOT NULL,
             created_at TEXT NOT NULL
         );
+
         CREATE TABLE IF NOT EXISTS recommendations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -37,63 +46,119 @@ def init_db():
             request_json TEXT NOT NULL,
             response_json TEXT NOT NULL,
             created_at TEXT NOT NULL,
-            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            FOREIGN KEY(user_id)
+                REFERENCES users(id)
+                ON DELETE CASCADE
         );
         """)
+
 
 def create_user(name, email, password_hash):
     with db() as conn:
         cur = conn.execute(
-            "INSERT INTO users(name,email,password_hash,created_at) VALUES(?,?,?,?)",
-            (name, email.lower().strip(), password_hash, datetime.now(timezone.utc).isoformat())
+            """
+            INSERT INTO users
+                (name, email, password_hash, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                name.strip(),
+                email.lower().strip(),
+                password_hash,
+                datetime.now(timezone.utc).isoformat(),
+            ),
         )
         return cur.lastrowid
 
+
 def get_user_by_email(email):
     with db() as conn:
-        row = conn.execute("SELECT * FROM users WHERE email=?", (email.lower().strip(),)).fetchone()
+        row = conn.execute(
+            "SELECT * FROM users WHERE email = ?",
+            (email.lower().strip(),),
+        ).fetchone()
         return dict(row) if row else None
+
 
 def get_user_by_id(user_id):
     with db() as conn:
         row = conn.execute(
-            "SELECT id,name,email,created_at FROM users WHERE id=?", (user_id,)
+            """
+            SELECT id, name, email, created_at
+            FROM users
+            WHERE id = ?
+            """,
+            (user_id,),
         ).fetchone()
         return dict(row) if row else None
 
-def save_recommendation(user_id, planner_type, budget, request_data, response_data):
+
+def save_recommendation(
+    user_id, planner_type, budget, request_data, response_data
+):
     with db() as conn:
         cur = conn.execute(
-            """INSERT INTO recommendations
-            (user_id,planner_type,budget,request_json,response_json,created_at)
-            VALUES(?,?,?,?,?,?)""",
+            """
+            INSERT INTO recommendations
+                (user_id, planner_type, budget,
+                 request_json, response_json, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
             (
-                user_id, planner_type, budget,
+                user_id,
+                planner_type,
+                budget,
                 json.dumps(request_data, ensure_ascii=False),
                 json.dumps(response_data, ensure_ascii=False),
-                datetime.now(timezone.utc).isoformat()
-            )
+                datetime.now(timezone.utc).isoformat(),
+            ),
         )
         return cur.lastrowid
+
 
 def list_history(user_id):
     with db() as conn:
         rows = conn.execute(
-            """SELECT id,planner_type,budget,created_at
-               FROM recommendations WHERE user_id=?
-               ORDER BY id DESC""", (user_id,)
+            """
+            SELECT id, planner_type, budget, created_at
+            FROM recommendations
+            WHERE user_id = ?
+            ORDER BY id DESC
+            """,
+            (user_id,),
         ).fetchall()
-        return [dict(r) for r in rows]
+        return [dict(row) for row in rows]
+
 
 def get_recommendation(user_id, recommendation_id):
     with db() as conn:
         row = conn.execute(
-            "SELECT * FROM recommendations WHERE id=? AND user_id=?",
-            (recommendation_id, user_id)
+            """
+            SELECT *
+            FROM recommendations
+            WHERE id = ? AND user_id = ?
+            """,
+            (recommendation_id, user_id),
         ).fetchone()
+
         if not row:
             return None
+
         item = dict(row)
         item["request"] = json.loads(item.pop("request_json"))
         item["response"] = json.loads(item.pop("response_json"))
         return item
+
+
+def database_diagnostics():
+    """Return basic database details for debugging."""
+    with db() as conn:
+        user_count = conn.execute(
+            "SELECT COUNT(*) FROM users"
+        ).fetchone()[0]
+
+        return {
+            "database_path": str(settings.database_path),
+            "user_count": user_count,
+        }
+```
