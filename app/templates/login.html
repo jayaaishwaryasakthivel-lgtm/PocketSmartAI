@@ -1,1 +1,107 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PocketSmartAI - Login</title>
+<style>
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2ff, #fce7f3);
+    color: #1e293b;
+}
+.card {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px #0001;
+}
+h1 { color: #4f46e5; text-align: center; }
+p { text-align: center; color: #64748b; }
+label { display: block; margin-top: 18px; font-weight: bold; }
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font-size: 16px;
+}
+button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 22px;
+    background: #4f46e5;
+    color: white;
+    border: 0;
+    border-radius: 9px;
+    font-size: 16px;
+    cursor: pointer;
+}
+a { color: #4f46e5; }
+.message { margin-top: 16px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="card">
+<h1>💰 PocketSmartAI</h1>
+<p>Welcome back! Sign in to continue.</p>
 
+<form id="loginForm">
+<label>Email</label>
+<input id="email" type="email" required placeholder="Enter your email">
+
+<label>Password</label>
+<input id="password" type="password" required placeholder="Enter your password">
+
+<button type="submit">Login</button>
+</form>
+
+<div id="message" class="message"></div>
+<p>Don't have an account? <a href="/register">Register here</a></p>
+<p><a href="/">← Back to Home</a></p>
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const message = document.getElementById("message");
+    message.textContent = "Signing in...";
+
+    try {
+        const response = await fetch("/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            credentials: "same-origin",
+            body: JSON.stringify({
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            message.textContent = data.detail || "Login failed. Please try again.";
+            return;
+        }
+
+        window.location.href = "/dashboard";
+    } catch (error) {
+        message.textContent = "Connection error. Please try again.";
+    }
+});
+</script>
+</body>
+</html>
+```
