@@ -1,4 +1,4 @@
-```python
+
 import json
 import sqlite3
 from contextlib import contextmanager
@@ -161,4 +161,3 @@ def database_diagnostics():
             "database_path": str(settings.database_path),
             "user_count": user_count,
         }
-```
